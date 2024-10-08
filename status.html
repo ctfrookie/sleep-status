@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Sleep Status</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-repeat: no-repeat;
+            background-size: cover;
+            background-position: center;
+            transition: background-color 1s ease;
+        }
+        
+        h1 {
+            font-size: 20.5em;
+            text-align: center;
+            transition: color 0.5s, background-color 0.5s;
+            padding: 20px;
+            border-radius: 100px;
+        }
+        /* 状态颜色 */
+        
+        .awake {
+            color: #4caf50;
+            /* Green for Awake */
+        }
+        
+        .sleeping {
+            color: #f44336;
+            /* Red for Sleeping */
+        }
+        /* 白天和夜晚的背景颜色 */
+        
+        .day {
+            background: linear-gradient(to bottom, #87CEEB, #ffffff);
+            position: relative;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .day::before {
+            content: "☀️";
+            position: absolute;
+            font-size: 200px;
+            color: rgba(255, 215, 0, 0.5);
+            filter: blur(1px);
+            top: 20%;
+            left: 80%;
+            transform: translate(-50%, -50%);
+            z-index: 0;
+        }
+        
+        .night {
+            background: linear-gradient(to bottom, #0b3d91, #000000);
+            position: relative;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .night::before {
+            content: "🌕";
+            position: absolute;
+            font-size: 200px;
+            color: rgb(255, 217, 0);
+            filter: blur(1px);
+            top: 20%;
+            left: 80%;
+            transform: translate(-50%, -50%);
+            z-index: 0;
+        }
+        /* 媒体查询 */
+        
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 10em;
+                /* 调整标题大小以适应小屏幕 */
+            }
+            .day::before,
+            .night::before {
+                font-size: 100px;
+                /* 调整图标大小 */
+                top: 15%;
+                /* 调整位置 */
+            }
+        }
+        
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 6em;
+                /* 更小的屏幕时进一步缩小字体 */
+            }
+            .day::before,
+            .night::before {
+                font-size: 70px;
+                /* 更小的图标 */
+                top: 10%;
+                /* 进一步调整位置 */
+            }
+        }
+    </style>
+    <script>
+        function fetchSleepStatus() {
+            const body = document.body;
+            fetch('/status')
+                .then(response => response.json())
+                .then(data => {
+                    const statusElement = document.getElementById('sleep-status');
+                    statusElement.textContent = data.sleep ? "🛌" : "🚶";
+
+                    // 更新状态的类
+                    if (data.sleep) {
+                        statusElement.classList.remove('awake');
+                        statusElement.classList.add('sleeping');
+                        // body.classList.add('night');
+                        // body.classList.remove('day');
+                    } else {
+                        statusElement.classList.remove('sleeping');
+                        statusElement.classList.add('awake');
+                        // body.classList.add('day');
+                        // body.classList.remove('night');
+                    }
+                })
+                .catch(error => console.error('Error fetching sleep status:', error));
+        }
+
+        function updateBackground() {
+            // 获取当前的中国时间
+            const currentDate = new Date();
+            const utcTime = currentDate.getTime() + (currentDate.getTimezoneOffset() * 60000); // UTC时间
+            const chinaTime = new Date(utcTime + (8 * 3600000)); // 加8小时
+
+            const currentHour = chinaTime.getHours();
+            const body = document.body;
+
+            if (currentHour >= 6 && currentHour < 18) {
+                body.classList.add('day');
+                body.classList.remove('night');
+            } else {
+                body.classList.add('night');
+                body.classList.remove('day');
+            }
+        }
+
+
+
+
+        // 每隔5秒请求一次状态
+        setInterval(fetchSleepStatus, 5000);
+
+        // 页面加载时初始化背景和睡眠状态
+        window.onload = function() {
+            updateBackground();
+            fetchSleepStatus();
+        };
+    </script>
+</head>
+
+<body>
+    <h1 id="sleep-status" class="awake">{{ if .Sleep }}🛌{{ else }}🚶{{ end }}</h1>
+</body>
+
+</html>
+
+</html>

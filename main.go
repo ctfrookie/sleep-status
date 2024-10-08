@@ -7,7 +7,7 @@ import (
 )
 
 func main() {
-	port := flag.String("port", "8000", "port to serve on")
+	port := flag.String("port", "800", "port to serve on")
 	host := flag.String("host", "0.0.0.0", "host to serve on")
 	flag.Parse()
 
@@ -21,6 +21,8 @@ func main() {
 	fmt.Printf("Current key: %s\n", ConfigData.Key)
 	fmt.Printf("当前的 key: %s\n", ConfigData.Key)
 
+	http.HandleFunc("/", HomeHandler)
+	// http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
 	http.HandleFunc("/status", StatusHandler)
 	http.HandleFunc("/change", ChangeHandler)
 

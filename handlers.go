@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"net/http"
+	"text/template"
 	"time"
 )
 
@@ -18,6 +19,32 @@ type Response struct {
 type SleepRecord struct {
 	Action string `json:"action"`
 	Time   string `json:"time"`
+}
+
+// 添加主页展示是否在睡觉
+func HomeHandler(w http.ResponseWriter, r *http.Request) {
+	clientIP := r.RemoteAddr
+	LogAccess(clientIP, "/")
+
+	// 解析模板
+	tmpl, err := template.ParseFiles("status.html")
+	if err != nil {
+		http.Error(w, "Error loading template", http.StatusInternalServerError)
+		return
+	}
+
+	// 创建一个数据结构传递给模板
+	data := struct {
+		Sleep bool
+	}{
+		Sleep: ConfigData.Sleep,
+	}
+
+	// 执行模板并返回响应
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	if err := tmpl.Execute(w, data); err != nil {
+		http.Error(w, "Error rendering template", http.StatusInternalServerError)
+	}
 }
 
 // StatusHandler handles the /status route and returns the current sleep status
